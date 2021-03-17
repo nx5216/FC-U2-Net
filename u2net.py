@@ -299,7 +299,7 @@ class RSU4(nn.Module):#UNet04DRES(nn.Module):
         hx2dup = _upsample_like(hx2d,hx1)
 
         hx1d = self.rebnconv1d(torch.cat((hx2dup,hx1),1))
-        # hx1d = self.fc(hx1d)
+        hx1d = self.fc(hx1d)
         return hx1d + hxin
 
 ### RSU-4F ###
@@ -336,7 +336,7 @@ class RSU4F(nn.Module):#UNet04FRES(nn.Module):
         hx2d = self.rebnconv2d(torch.cat((hx3d,hx2),1))
         hx1d = self.rebnconv1d(torch.cat((hx2d,hx1),1))
 
-        # hx1d = self.fc(hx1d)
+        hx1d = self.fc(hx1d)
 
         return hx1d + hxin
 
@@ -373,12 +373,7 @@ class u2net(nn.Module):
 
         self.side1 = nn.Conv2d(64,out_ch,3,padding=1)
         self.side2 = nn.Conv2d(64,out_ch,3,padding=1)
-        self.side3 = nn.Conv2d(64,out_ch,3,padding=1)
-        self.side4 = nn.Conv2d(64,out_ch,3,padding=1)
-        self.side5 = nn.Conv2d(64,out_ch,3,padding=1)
-        self.side6 = nn.Conv2d(64,out_ch,3,padding=1)
 
-        self.outconv = nn.Conv2d(6*out_ch,out_ch,1)
 
     def forward(self,x):
 
@@ -431,41 +426,16 @@ class u2net(nn.Module):
         #side output
         d1 = self.side1(hx1d)
         d1 = d1.permute(0, 1, 3, 2)
-        # mix = mix.repeat(1,2,1,1)
-        return mix*F.relu(d1)
+        d2 = self.side2(hx1d)
+        d2 = d2.permute(0, 1, 3, 2)
+        return mix*F.relu(d1), F.sigmoid(d2)
 
-        # d2 = self.side2(hx2d)
-        # d2 = _upsample_like(d2,d1)
-
-        # d3 = self.side3(hx3d)
-        # d3 = _upsample_like(d3,d1)
-
-        # d4 = self.side4(hx4d)
-        # d4 = _upsample_like(d4,d1)
-
-        # d5 = self.side5(hx5d)
-        # d5 = _upsample_like(d5,d1)
-
-        # d6 = self.side6(hx6)
-        # d6 = _upsample_like(d6,d1)
-
-        # d0 = self.outconv(torch.cat((d1,d2,d3,d4,d5,d6),1))
-
-        # d0 = d0.permute(0, 1, 3, 2)
-        # d1 = d1.permute(0, 1, 3, 2)
-        # d2 = d2.permute(0, 1, 3, 2)
-        # d3 = d3.permute(0, 1, 3, 2)
-        # d4 = d4.permute(0, 1, 3, 2)
-        # d5 = d5.permute(0, 1, 3, 2)
-        # d6 = d6.permute(0, 1, 3, 2)
-
-        # return mix*F.relu(d0),mix*F.relu(d1),mix*F.relu(d2),mix*F.relu(d3),mix*F.relu(d4),mix*F.relu(d5),mix*F.relu(d6)
 
 
 if __name__ == "__main__":
 
     net1 = u2net().cuda()
-    # net1 = U2NETP().cuda()
+
     x = torch.rand(10,2,513,256).cuda()
     y = net1(x)
 
