@@ -6,13 +6,13 @@ class REBNCONV(nn.Module):
     def __init__(self,in_ch=3,out_ch=3,dirate=1):
         super(REBNCONV,self).__init__()
 
-        self.conv_s1 = nn.Conv2d(in_ch,out_ch,3,padding=1*dirate,dilation=1*dirate)
-        self.bn_s1 = nn.BatchNorm2d(out_ch)
-        self.relu_s1 = nn.ReLU(inplace=True)
+        self.conv = nn.Conv2d(in_ch,out_ch,3,padding=1*dirate,dilation=1*dirate)
+        self.bn = nn.BatchNorm2d(out_ch)
+        self.relu = nn.ReLU(inplace=True)
 
     def forward(self,x):
 
-        x = self.relu_s1(self.bn_s1(self.conv_s1(x)))
+        x = self.relu(self.bn(self.conv(x)))
 
         return x
 
