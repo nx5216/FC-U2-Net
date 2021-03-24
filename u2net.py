@@ -371,8 +371,8 @@ class u2net(nn.Module):
         self.stage2d = RSU6(128,16,64,256)
         self.stage1d = RSU7(128,16,64,513)
 
-        self.side1 = nn.Conv2d(64,out_ch,3,padding=1)
-        self.side2 = nn.Conv2d(64,out_ch,3,padding=1)
+        self.side1 = nn.Conv2d(64,out_ch,3,padding=1,bias = False)
+        self.side2 = nn.Conv2d(64,out_ch,3,padding=1,bias = False)
 
 
     def forward(self,x):
@@ -428,7 +428,7 @@ class u2net(nn.Module):
         d1 = d1.permute(0, 1, 3, 2)
         d2 = self.side2(hx1d)
         d2 = d2.permute(0, 1, 3, 2)
-        return mix*F.relu(d1), F.sigmoid(d2)
+        return mix*F.relu(d1), d2
 
 
 
