@@ -51,19 +51,19 @@ class RSU7(nn.Module):#UNet07DRES(nn.Module):
         self.rebnconvin = REBNCONV(in_ch,out_ch,dirate=1)
 
         self.rebnconv1 = REBNCONV(out_ch,mid_ch,dirate=1)
-        self.pool1 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool1 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv2 = REBNCONV(mid_ch,mid_ch,dirate=1)
-        self.pool2 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool2 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv3 = REBNCONV(mid_ch,mid_ch,dirate=1)
-        self.pool3 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool3 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv4 = REBNCONV(mid_ch,mid_ch,dirate=1)
-        self.pool4 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool4 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv5 = REBNCONV(mid_ch,mid_ch,dirate=1)
-        self.pool5 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool5 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv6 = REBNCONV(mid_ch,mid_ch,dirate=1)
 
@@ -132,16 +132,16 @@ class RSU6(nn.Module):#UNet06DRES(nn.Module):
         self.rebnconvin = REBNCONV(in_ch,out_ch,dirate=1)
 
         self.rebnconv1 = REBNCONV(out_ch,mid_ch,dirate=1)
-        self.pool1 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool1 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv2 = REBNCONV(mid_ch,mid_ch,dirate=1)
-        self.pool2 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool2 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv3 = REBNCONV(mid_ch,mid_ch,dirate=1)
-        self.pool3 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool3 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv4 = REBNCONV(mid_ch,mid_ch,dirate=1)
-        self.pool4 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool4 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv5 = REBNCONV(mid_ch,mid_ch,dirate=1)
 
@@ -203,13 +203,13 @@ class RSU5(nn.Module):#UNet05DRES(nn.Module):
         self.rebnconvin = REBNCONV(in_ch,out_ch,dirate=1)
 
         self.rebnconv1 = REBNCONV(out_ch,mid_ch,dirate=1)
-        self.pool1 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool1 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv2 = REBNCONV(mid_ch,mid_ch,dirate=1)
-        self.pool2 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool2 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv3 = REBNCONV(mid_ch,mid_ch,dirate=1)
-        self.pool3 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool3 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv4 = REBNCONV(mid_ch,mid_ch,dirate=1)
 
@@ -263,10 +263,10 @@ class RSU4(nn.Module):#UNet04DRES(nn.Module):
         self.rebnconvin = REBNCONV(in_ch,out_ch,dirate=1)
 
         self.rebnconv1 = REBNCONV(out_ch,mid_ch,dirate=1)
-        self.pool1 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool1 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv2 = REBNCONV(mid_ch,mid_ch,dirate=1)
-        self.pool2 = nn.MaxPool2d(2,stride=2,ceil_mode=True)
+        self.pool2 = nn.AvgPool2d(2,stride=2,ceil_mode=True)
 
         self.rebnconv3 = REBNCONV(mid_ch,mid_ch,dirate=1)
 
@@ -348,19 +348,19 @@ class u2net(nn.Module):
         super(u2net,self).__init__()
 
         self.stage1 = RSU7(in_ch,16,64,513)
-        self.pool12 = nn.MaxPool2d(2,stride=2)
+        self.pool12 = nn.AvgPool2d(2,stride=2)
 
         self.stage2 = RSU6(64,16,64,256)
-        self.pool23 = nn.MaxPool2d(2,stride=2)
+        self.pool23 = nn.AvgPool2d(2,stride=2)
 
         self.stage3 = RSU5(64,16,64,128)
-        self.pool34 = nn.MaxPool2d(2,stride=2)
+        self.pool34 = nn.AvgPool2d(2,stride=2)
 
         self.stage4 = RSU4(64,16,64,64)
-        self.pool45 = nn.MaxPool2d(2,stride=2)
+        self.pool45 = nn.AvgPool2d(2,stride=2)
 
         self.stage5 = RSU4F(64,16,64,32)
-        self.pool56 = nn.MaxPool2d(2,stride=2)
+        self.pool56 = nn.AvgPool2d(2,stride=2)
 
         self.stage6 = RSU4F(64,16,64,16)
 
