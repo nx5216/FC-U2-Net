@@ -15,9 +15,7 @@ import io
 import time
 import matplotlib.pyplot as plt
 import importlib
-# from u2net import u2net
-# from hardnet import hardnet
-# from denseunet import denseunet
+from u2net import u2net
 
 def load_model(target, model_name='umxhq', device=torch.device("cpu")):
     model_path = Path(model_name).expanduser()
@@ -31,18 +29,8 @@ def load_model(target, model_name='umxhq', device=torch.device("cpu")):
         # print(target_model_path)
         state = torch.load(target_model_path,map_location=device)
 
-        model_path = str(Path(model_path, 'u2net')).replace('\\','.')
-        net = importlib.import_module(model_path)
-        mymodel = net.u2net(2,2)
-
-
-        # model_path = str(Path(model_path, 'hrnet')).replace('\\','.')
-        # net = importlib.import_module(model_path)
-        # mymodel = net.hrnet(2,2)
-
-        # mymodel = hardnet()
+        mymodel = u2net(2,2,results['args']['bins'])
         
-
         mymodel.load_state_dict(state)
         mymodel.eval()
         mymodel.to(device)
@@ -58,31 +46,15 @@ def load_model(target, model_name='umxhq', device=torch.device("cpu")):
         return mymodel, params
 
 
-def transform(audio, model, fft, hop, device, vocals):
+def transform(audio, model, fft, hop, device):
     with torch.no_grad():
-        # audio_torch = utils.ComplexFFT(utils.STFT(audio[None, ...], None, fft, hop)).to(device)
-        # mag_target = model(audio_torch)
-        # # mag_target = mag_target * F.sigmoid(mag_mask)
-        # x = mag_target.cpu().detach()
-        # complex = x.reshape(x.shape[0], -1, 2,x.shape[-2], x.shape[-1]).permute(0, 1, 3, 4, 2)[0]
-        # audio_hat = torch.istft(complex, fft, hop, fft, torch.hann_window(fft)).numpy()
-        
-        # vocals_mask = utils.ComplexFFT(utils.STFT(vocals[None, ...], None, fft, hop))
-        # vocals_mask[torch.abs(vocals_mask) < 0.2] = 0
-        # vocals_mask[torch.abs(vocals_mask) >= 0.2] = 1
-        # x = x*vocals_mask
-        # complex = x.reshape(x.shape[0], -1, 2,x.shape[-2], x.shape[-1]).permute(0, 1, 3, 4, 2)[0]
-        # audio_hat = torch.istft(complex, fft, hop, fft, torch.hann_window(fft)).numpy()
 
         audio_torch = utils.Spectrogram(utils.STFT(audio[None, ...], None, fft, hop))
         audio_torch = audio_torch.to(device)
         mag_target = model(audio_torch)
-        # mag_target = model(mag_target)
-        # mag_target, mag_mask = model(audio_torch)
-        # mag_mask[mag_mask > 0] = 1
-        # mag_mask[mag_mask < 0] = 0
-        # mag_target = mag_target * mag_mask
-        # mag_target = mag_target * F.sigmoid(mag_mask)
+
+        mag_target, mag_mask = model(audio_torch)
+        mag_target = mag_target * F.sigmoid(mag_mask)
         mag_target = mag_target.cpu().detach()
         
         mag_target = mag_target.reshape(-1, mag_target.shape[-2], mag_target.shape[-1])
@@ -90,51 +62,6 @@ def transform(audio, model, fft, hop, device, vocals):
         magnitude, phase = torchaudio.functional.magphase(X)
         complex = torch.stack((mag_target * torch.cos(phase), mag_target * torch.sin(phase)), -1)
         audio_hat = torch.istft(complex, fft, hop, fft, torch.hann_window(fft)).numpy()
-
-        # audio_torch = torch.log1p(audio_torch)
-        # mag_target = model(audio_torch).cpu().detach()
-        # mag_target = torch.expm1(mag_target)
-        # mag_target,mag_mask = model(audio_torch)
-        # mag_mask[mag_mask > 0] = 1
-        # mag_mask[mag_mask < 0] = 0
-        # mag_target = mag_target * mag_mask
-        # mag_target = mag_target * F.sigmoid(mag_mask)
-        # mag_target = mag_target.cpu().detach()
-
-        # mag_target = audio_torch * mag_mask
-        # temp = mag_mask.cpu().detach()[0]
-
-
-        # while True:
-        #     pass
-        # mag_target = model(audio_torch).cpu().detach()
-        # vocals_mask = utils.Spectrogram(utils.STFT(vocals[None, ...], None, fft, hop))
-        # temp = torch.ones_like(vocals_mask)
-        # temp[vocals_mask* 10 / 5 < audio_torch.cpu()] = 0
-        # temp[vocals_mask < 0.1] = 0
-        # mag_target = temp
-        # temp[vocals_mask < 0.5] = 0
-        # vocals_mask[vocals_mask >= 0.5] = 1
-        # mag_target = mag_target * temp
-
-        # mag_target = F.pad(mag_target,[0,0,0,2049-1473])
-        # mag_target = model(audio_torch)[0].cpu().detach()
-
-
-        # 
-
-
-
-        # audio_torch = utils.ComplexFFT(utils.STFT(audio[None, ...], None, fft, hop)).to(device)
-        # x = model(audio_torch).cpu().detach()
-        # vocals_mask = utils.ComplexFFT(utils.STFT(vocals[None, ...], None, fft, hop))
-        # vocals_mask[torch.abs(vocals_mask) < 0.2] = 0
-        # vocals_mask[torch.abs(vocals_mask) >= 0.2] = 1
-        # x = x*vocals_mask
-        # complex = x.reshape(x.shape[0], -1, 2,x.shape[-2], x.shape[-1]).permute(0, 1, 3, 4, 2)[0]
-        # audio_hat = torch.istft(complex, fft, hop, fft, torch.hann_window(fft)).numpy()
-
-
 
     return audio_hat
 
@@ -153,9 +80,6 @@ def separate(
     sample_rate = params['sample_rate']
 
     audio, rate = torchaudio.load(input_file)
-    vocals, rate = torchaudio.load(input_file.replace('mixture','vocals'))
-    # vocals, rate = torchaudio.load(input_file.replace('mixture','accompaniment'))
-    # audio = voc/2 + acc/2
 
     if rate != sample_rate:
         audio = torchaudio.transforms.Resample(rate, sample_rate)(audio)
@@ -172,17 +96,15 @@ def separate(
     stride = window // 2
     rest = stride - (total_length - window)%stride
     audio = torch.cat([audio, torch.zeros((channels, rest))], -1)
-    vocals = torch.cat([vocals,torch.zeros((channels,rest))],-1)
     start = 0
     num = np.zeros((channels, audio.shape[1]))
     audio_sum = np.zeros((channels, audio.shape[1]))
 
     while start < audio.shape[1] - window + 1:
         audio_split = audio[:, start:start + window]
-        vocals_split = vocals[:, start:start + window]
         num[:, start:start + window] += 1
 
-        audio_hat = transform(audio_split, Model, fft, hop, device,vocals_split)
+        audio_hat = transform(audio_split, Model, fft, hop, device)
 
         audio_sum[..., start:start + window] = audio_hat / num[..., start:start + window] + audio_sum[
                                                                                                         ...,
@@ -192,7 +114,6 @@ def separate(
         start += stride
 
     audio_sum = audio_sum[:,:-rest]
-
 
     return audio_sum.T, params
 
