@@ -344,32 +344,32 @@ class RSU4F(nn.Module):#UNet04FRES(nn.Module):
 ### U^2-Net small ###
 class u2net(nn.Module):
 
-    def __init__(self,in_ch=2,out_ch=2):
+    def __init__(self,in_ch=2,out_ch=2,bins):
         super(u2net,self).__init__()
 
-        self.stage1 = RSU7(in_ch,16,64,513)
+        self.stage1 = RSU7(in_ch,16,64,bins)
         self.pool12 = nn.AvgPool2d(2,stride=2)
 
-        self.stage2 = RSU6(64,16,64,256)
+        self.stage2 = RSU6(64,16,64,bins//2)
         self.pool23 = nn.AvgPool2d(2,stride=2)
 
-        self.stage3 = RSU5(64,16,64,128)
+        self.stage3 = RSU5(64,16,64,bins//4)
         self.pool34 = nn.AvgPool2d(2,stride=2)
 
-        self.stage4 = RSU4(64,16,64,64)
+        self.stage4 = RSU4(64,16,64,bins//8)
         self.pool45 = nn.AvgPool2d(2,stride=2)
 
-        self.stage5 = RSU4F(64,16,64,32)
+        self.stage5 = RSU4F(64,16,64,bins//16)
         self.pool56 = nn.AvgPool2d(2,stride=2)
 
-        self.stage6 = RSU4F(64,16,64,16)
+        self.stage6 = RSU4F(64,16,64,bins//32)
 
         # decoder
-        self.stage5d = RSU4F(128,16,64,32)
-        self.stage4d = RSU4(128,16,64,64)
-        self.stage3d = RSU5(128,16,64,128)
-        self.stage2d = RSU6(128,16,64,256)
-        self.stage1d = RSU7(128,16,64,513)
+        self.stage5d = RSU4F(128,16,64,bins//16)
+        self.stage4d = RSU4(128,16,64,bins//8)
+        self.stage3d = RSU5(128,16,64,bins//4)
+        self.stage2d = RSU6(128,16,64,bins//2)
+        self.stage1d = RSU7(128,16,64,bins)
 
         self.side1 = nn.Conv2d(64,out_ch,3,padding=1,bias = False)
         self.side2 = nn.Conv2d(64,out_ch,3,padding=1,bias = False)
